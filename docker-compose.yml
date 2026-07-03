@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   db:
     image: postgres:15
@@ -12,9 +10,40 @@ services:
     ports:
       - "${DB_PORT}:5432"
     volumes:
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # Safely stores your actual database rows (New named volume)
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - pipeline_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: leads_backend
+    restart: always
+    ports:
+      - "${BACKEND_PORT}:5000"
+    environment:
+      - PORT=5000
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=db
+      - DB_PORT=5432
+    command: sh -c "npx knex migrate:latest --env development && npm start"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - pipeline_network
+
+volumes:
+  postgres_data:
+networks:
+  pipeline_network:
+    driver: bridge
