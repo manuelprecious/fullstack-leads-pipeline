@@ -37,7 +37,7 @@ jobs:
         run: |
           echo "Waiting for backend API gateway routing layers to stabilize..."
           for i in {1..6}; do
-            if curl -s http://localhost:5000/health | grep -q '"status":"healthy"'; then
+            if docker compose exec -T leads_backend curl -s http://localhost:5000/health | grep -q '"status":"healthy"'; then
               echo "Pipeline verification successful! Secure database pool connected."
               exit 0
             fi
