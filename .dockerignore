@@ -1,0 +1,17 @@
+# Ignore local git history
+.git
+.gitignore
+
+# Ignore local environment secrets (Docker uses compose variables instead)
+*.env
+*.env.*
+
+# Ignore massive local dependency trees
+**/node_modules
+
+# Ignore debug logs
+**/npm-debug.log*
+
+# Ignore local documentation or markdown files not needed in production
+README.md
+.dockerignore
