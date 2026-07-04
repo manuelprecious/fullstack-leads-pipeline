@@ -1,8 +1,21 @@
 const express = require('express');
 const http = require('http');
+const cors = require('cors'); // Added: Required for cross-origin container requests
 const db = require('./db');
 const logger = require('./logger'); // Import our structured logger instance
 require('dotenv').config({ path: '../.env' });
+
+// ==========================================
+// ENVIRONMENT VERIFICATION & CONFIGURATION
+// ==========================================
+const FRONTEND_URL = process.env.FRONTEND_URL;
+
+// STRICT ASSERTION: REMOVED FOR SAME-ORIGIN NGINX PROXY PATTERN
+// if (!FRONTEND_URL) {
+//     const errorMsg = "CRITICAL CONFIGURATION ERROR: 'FRONTEND_URL' environment variable is missing.";
+//     logger.error(errorMsg);
+//     throw new Error(errorMsg);
+// }
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -10,14 +23,17 @@ const PORT = process.env.PORT || 5000;
 // Middleware to parse incoming JSON payloads
 app.use(express.json());
 
+// Open standard CORS since Nginx handles structural routing restrictions
+app.use(cors());
+
 // Request logging middleware to track incoming traffic metrics
 app.use((req, res, next) => {
     logger.info({ method: req.method, url: req.url, ip: req.ip }, 'Incoming network request');
     next();
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
+// Health check endpoint - updated with /api prefix
+app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'UP', message: 'Backend server is running smoothly.' });
 });
 

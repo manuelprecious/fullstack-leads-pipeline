@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:15
@@ -10,7 +12,6 @@ services:
     ports:
       - "${DB_PORT}:5432"
     volumes:
-      # Safely stores your actual database rows (New named volume)
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
@@ -26,8 +27,7 @@ services:
       dockerfile: Dockerfile
     container_name: leads_backend
     restart: always
-    ports:
-      - "${BACKEND_PORT}:5000"
+    # We remove the exposed port since only the frontend container needs to be reached from outside
     environment:
       - PORT=5000
       - DB_USER=${DB_USER}
@@ -42,8 +42,22 @@ services:
     networks:
       - pipeline_network
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: leads_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - pipeline_network
+
 volumes:
   postgres_data:
+
 networks:
   pipeline_network:
     driver: bridge
