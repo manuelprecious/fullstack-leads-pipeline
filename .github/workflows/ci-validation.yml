@@ -2,9 +2,9 @@ name: Leads Pipeline Continuous Integration
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feature/cicd-pipeline ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, feature/cicd-pipeline ]
 
 jobs:
   validate-infrastructure:
